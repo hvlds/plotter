@@ -60,9 +60,9 @@ class ApriltagSubscriber(Node):
     def listener_callback(self, msg):
         stamp = msg.header.stamp
         for marker in msg.detections:
-            x_pos = marker.pose.pose.position.x
-            y_pos = marker.pose.pose.position.y
-            z_pos = marker.pose.pose.position.z
+            x_pos = marker.pose.pose.pose.position.x
+            y_pos = marker.pose.pose.pose.position.y
+            z_pos = marker.pose.pose.pose.position.z
 
             detection = Detection(stamp, x_pos, y_pos, z_pos)
             self.all_detections.append(detection)
