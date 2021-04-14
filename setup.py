@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-                'plotter = plotter.irmarker_subscriber:main',
+                'irmarker = plotter.irmarker_subscriber:main',
+                'apriltag = plotter.apriltag_subscriber:main',
         ],
     },
 )

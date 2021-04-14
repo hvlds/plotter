@@ -1,19 +1,20 @@
 import rclpy
 from rclpy.node import Node
 
-from irtag_msgs.msg import IRTagArray
+from apriltag_msgs.msg import AprilTagDetectionArray
+import matplotlib.pyplot as plt
 import numpy as np
 
 from .detection import Detection
 from .utils import save_graph
 
 
-class IRMarkerSubscriber(Node):
+class ApriltagSubscriber(Node):
     def __init__(self):
-        super().__init__('irmarker_subscriber')
+        super().__init__('apriltag_subscriber')
         self.subscription = self.create_subscription(
-            IRTagArray,
-            '/irtracking/tag_detections',
+            AprilTagDetectionArray,
+            '/tag_detections',
             self.listener_callback,
             10)
         self.subscription
@@ -44,7 +45,7 @@ class IRMarkerSubscriber(Node):
                 self.z_values.append(self.plot_detections[-1].z * 100)
 
             elif self.first_plot:
-                self.save_csv("infrared_test.csv")
+                self.save_csv("apriltag_test.csv")
                 self.get_logger().info("CSV is ready!")
                 self.first_plot = False
 
@@ -71,11 +72,11 @@ class IRMarkerSubscriber(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    irmarker_subscriber = IRMarkerSubscriber()
+    apriltag_subscriber = ApriltagSubscriber()
 
-    rclpy.spin(irmarker_subscriber)
+    rclpy.spin(apriltag_subscriber)
 
-    irmarker_subscriber.destroy_node()
+    apriltag_subscriber.destroy_node()
     rclpy.shutdown()
 
 
