@@ -2,8 +2,9 @@ import rclpy
 from rclpy.node import Node
 
 from irtag_msgs.msg import IRTagArray
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 import numpy as np
+
 
 class Detection:
     def __init__(self, stamp, x, y, z):
@@ -36,28 +37,32 @@ class IRMarkerSubscriber(Node):
         if self.all_detections:
             first_stamp = self.all_detections[0].stamp
             last_stamp = self.all_detections[-1].stamp
-            
+
             first_sec = first_stamp.sec + (first_stamp.nanosec / 10e9)
             last_sec = last_stamp.sec + (last_stamp.nanosec / 10e9)
             sec_diff = last_sec - first_sec
-            
+
             if sec_diff <= 10:
                 self.plot_detections.append(self.all_detections[-1])
                 self.times.append(sec_diff)
-                self.x_values.append(self.plot_detections[-1].x)
-                self.y_values.append(self.plot_detections[-1].y)
-                self.z_values.append(self.plot_detections[-1].z)
+                self.x_values.append(self.plot_detections[-1].x * 100)
+                self.y_values.append(self.plot_detections[-1].y * 100)
+                self.z_values.append(self.plot_detections[-1].z * 100)
 
             elif self.first_plot:
-                x = np.array(self.times)
-                y = np.array(self.z_values)
-                plt.title("IRMarker") 
-                plt.xlabel("Time") 
-                plt.ylabel("Z Position") 
-                plt.plot(x,y) 
-                plt.savefig("foo.png")
+                self.save_graph(self.times, self.x_values, "Time [s]", "X Position [cm]", "x_pos.png")
+                self.save_graph(self.times, self.y_values, "Time [s]", "Y Position [cm]", "y_pos.png")
+                self.save_graph(self.times, self.z_values, "Time [s]", "Z Position [cm]", "z_pos.png")
                 self.first_plot = False
 
+    def save_graph(self, x_values, y_values, x_label, y_label, output_file):
+        x = np.array(x_values)
+        y = np.array(y_values)
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+        plt.plot(x, y, ".-")
+        plt.savefig(output_file, bbox_inches="tight")
+        plt.clf()
 
     def listener_callback(self, msg):
         stamp = msg.header.stamp
@@ -69,8 +74,6 @@ class IRMarkerSubscriber(Node):
             detection = Detection(stamp, x_pos, y_pos, z_pos)
             self.all_detections.append(detection)
             self.check_detections()
-
-            # self.get_logger().info(str(marker.pose.pose.position.z))
 
 
 def main(args=None):
