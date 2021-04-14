@@ -42,7 +42,7 @@ class IRMarkerSubscriber(Node):
             last_sec = last_stamp.sec + (last_stamp.nanosec / 10e9)
             sec_diff = last_sec - first_sec
 
-            if sec_diff <= 10:
+            if sec_diff <= 100:
                 self.plot_detections.append(self.all_detections[-1])
                 self.times.append(sec_diff)
                 self.x_values.append(self.plot_detections[-1].x * 100)
@@ -50,10 +50,23 @@ class IRMarkerSubscriber(Node):
                 self.z_values.append(self.plot_detections[-1].z * 100)
 
             elif self.first_plot:
-                self.save_graph(self.times, self.x_values, "Time [s]", "X Position [cm]", "x_pos.png")
-                self.save_graph(self.times, self.y_values, "Time [s]", "Y Position [cm]", "y_pos.png")
-                self.save_graph(self.times, self.z_values, "Time [s]", "Z Position [cm]", "z_pos.png")
+                self.save_csv("infrared_test.csv")
+                self.get_logger().info("CSV is ready!")
+                # self.save_graph(self.times, self.x_values,
+                #                 "Time [s]", "X Position [cm]", "x_pos.png")
+                # self.save_graph(self.times, self.y_values,
+                #                 "Time [s]", "Y Position [cm]", "y_pos.png")
+                # self.save_graph(self.times, self.z_values,
+                #                 "Time [s]", "Z Position [cm]", "z_pos.png")
                 self.first_plot = False
+
+    def save_csv(self, output_file):
+        time_diff = np.array(self.times)
+        temp_x = np.array(self.x_values)
+        temp_y = np.array(self.y_values)
+        temp_z = np.array(self.z_values)
+        np.savetxt(output_file, np.array(list(zip(time_diff, temp_x, temp_y, temp_z))),
+            delimiter=',', header="time,x,y,z", comments="")
 
     def save_graph(self, x_values, y_values, x_label, y_label, output_file):
         x = np.array(x_values)
