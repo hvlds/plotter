@@ -1,8 +1,9 @@
 import rclpy
 from rclpy.node import Node
 
-from irtag_msgs.msg import IRTagArray, IRTag
-
+from irtag_msgs.msg import IRTagArray
+import matplotlib.pyplot as plt 
+import numpy as np
 
 class Detection:
     def __init__(self, stamp, x, y, z):
@@ -25,15 +26,38 @@ class IRMarkerSubscriber(Node):
         self.plot_detections = list()
         self.first_plot = True
 
+        # Plot values
+        self.times = list()
+        self.x_values = list()
+        self.z_values = list()
+        self.y_values = list()
+
     def check_detections(self):
-        if self.detections:
-            first_stamp = self.detections[0].stamp
-            last_stamp = self.detections[-1].stamp
+        if self.all_detections:
+            first_stamp = self.all_detections[0].stamp
+            last_stamp = self.all_detections[-1].stamp
             
-            if last_stamp.sec <= (first_stamp.sec + 60):
-                self.plot_detections.append(self.check_detections[-1])
+            first_sec = first_stamp.sec + (first_stamp.nanosec / 10e9)
+            last_sec = last_stamp.sec + (last_stamp.nanosec / 10e9)
+            sec_diff = last_sec - first_sec
+            
+            if sec_diff <= 10:
+                self.plot_detections.append(self.all_detections[-1])
+                self.times.append(sec_diff)
+                self.x_values.append(self.plot_detections[-1].x)
+                self.y_values.append(self.plot_detections[-1].y)
+                self.z_values.append(self.plot_detections[-1].z)
+
             elif self.first_plot:
-                pass
+                x = np.array(self.times)
+                y = np.array(self.z_values)
+                plt.title("IRMarker") 
+                plt.xlabel("Time") 
+                plt.ylabel("Z Position") 
+                plt.plot(x,y) 
+                plt.savefig("foo.png")
+                self.first_plot = False
+
 
     def listener_callback(self, msg):
         stamp = msg.header.stamp
